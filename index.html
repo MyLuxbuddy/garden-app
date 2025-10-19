@@ -1,10 +1,400 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Garden Entrance</title>
-  </head>
-  <body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
-    <h1>🌿 Welcome to the Garden Entrance</h1>
-  </body>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Garden of Connection</title>
+<style>
+  :root{
+    /* Luxe purple/cream brand */
+    --ink:#0c0a12;
+    --panel:#141021;
+    --text:#f8f5f1;
+    --hint:#d9d3cc;
+
+    --lav:#B27CFF;      /* amethyst */
+    --lav-soft:#EDE6FF; /* soft lavender */
+    --cream:#FFF3E3;
+    --sun:#FFD89A;
+    --moon:#DBE1FF;
+    --leaf:#9fd59f;
+    --leaf-dark:#4e8858;
+    --path:#cdbfae;
+
+    --dur-door:1200ms;
+    --dur-fade:800ms;
+    --dur-walk:3800ms;
+  }
+
+  html,body{height:100%;margin:0;background:var(--ink);color:var(--text);
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    overflow:hidden;}
+
+  .screen{position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity var(--dur-fade) ease;}
+  .screen.active{opacity:1; pointer-events:auto;}
+
+  /* ✨ Entrance */
+  .entrance{
+    background:
+      radial-gradient(1200px 700px at 50% -15%, rgba(255,216,154,.28), transparent 60%),
+      radial-gradient(1100px 760px at 50% 0%, rgba(178,124,255,.20), transparent 68%),
+      linear-gradient(180deg,#0b0a12 0%, #181229 55%, #0b0a12 100%);
+    display:grid; place-items:center;
+  }
+  .doors{position:absolute; inset:0;}
+  .door{position:absolute; top:0; width:52%; height:100%;
+    backdrop-filter:saturate(120%) blur(14px);
+    background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
+    box-shadow: inset 0 0 140px rgba(178,124,255,.22), 0 60px 120px rgba(0,0,0,.45);
+    border:1px solid rgba(255,255,255,.18);}
+  .left{left:-2%; border-right:1px solid rgba(255,255,255,.28);}
+  .right{right:-2%; border-left:1px solid rgba(255,255,255,.28);}
+  .sunshaft{position:absolute; inset:-10% -10% 40% -10%;
+    background:
+      radial-gradient(800px 520px at 50% -10%, rgba(255,216,154,.55), transparent 60%),
+      radial-gradient(900px 620px at 50% -4%, rgba(178,124,255,.35), transparent 65%);
+    mix-blend:screen; filter:blur(8px);}
+  .crest{position:absolute; top:10vh; left:50%; transform:translateX(-50%);
+    font-weight:800; letter-spacing:.3px; text-align:center; text-shadow:0 2px 18px rgba(0,0,0,.6);}
+  .enter-btn{position:absolute; bottom:8vh; left:50%; transform:translateX(-50%);
+    background:var(--lav-soft); color:#2b193e; border:0; border-radius:999px; padding:.95rem 1.2rem;
+    font-weight:800; cursor:pointer; box-shadow:0 12px 32px rgba(178,124,255,.35);}
+  .doors.open .left{animation:slideLeft var(--dur-door) cubic-bezier(.2,.8,.2,1) forwards;}
+  .doors.open .right{animation:slideRight var(--dur-door) cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes slideLeft{to{ transform:translateX(-48%);} }
+  @keyframes slideRight{to{ transform:translateX(48%);} }
+
+  /* 🌿 Walkway */
+  .walkway{overflow:hidden; background:linear-gradient(180deg,#0b0a12,#111020);}
+  .parallax{position:absolute; inset:0; perspective:800px;}
+  .layer{position:absolute; inset:-8%; background-position:center; background-size:cover;}
+  .bg{background:
+      linear-gradient(180deg,#cfe9ff 0%, #fff7ea 50%, #d9c4a6 80%, #8f78a8 100%);
+      filter:blur(2px) saturate(90%);}
+  .mid{
+    background-image:
+      radial-gradient(circle at 20% 90%, rgba(30,60,30,.35), transparent 40%),
+      radial-gradient(circle at 80% 88%, rgba(30,60,30,.35), transparent 40%),
+      radial-gradient(circle at 55% 92%, rgba(30,60,30,.35), transparent 40%);
+    transform:translateZ(-60px) scale(1.1);
+  }
+  .fg{
+    background:
+      radial-gradient(8px 12px at 15% 70%, rgba(84,120,84,.45), transparent 60%),
+      radial-gradient(8px 12px at 30% 78%, rgba(84,120,84,.40), transparent 60%),
+      radial-gradient(8px 12px at 70% 76%, rgba(84,120,84,.45), transparent 60%),
+      radial-gradient(600px 260px at 50% 120%, var(--path) 0%, #b09d86 55%, transparent 56%);
+    transform:translateZ(0) scale(1);
+  }
+  .parallax.walk {animation:walk var(--dur-walk) ease forwards;}
+  @keyframes walk{to{ transform:translateY(-2vh) scale(1.02);} }
+  .walk-copy{position:absolute; top:8vh; left:50%; transform:translateX(-50%);
+    font-weight:700; color:#2b2143; text-shadow:0 2px 10px rgba(255,255,255,.6);}
+
+  /* 🌳 Hub: day→night, breeze, stars */
+  .hub{position:absolute; inset:0; overflow:hidden;}
+  .sky{
+    position:absolute; inset:-10%;
+    background: linear-gradient(180deg,#cbe7ff 0%, #f9f5e7 45%, #d7c3a2 70%, #7b5b87 100%);
+    animation:daynight 22s linear infinite;
+  }
+  @keyframes daynight{
+    0%   {background:linear-gradient(180deg,#cbe7ff,#f9f5e7 45%,#d7c3a2 70%,#7b5b87);}
+    35%  {background:linear-gradient(180deg,#a6d3ff,#f4efd9 50%,#d1b894 72%,#664d7a);}
+    55%  {background:linear-gradient(180deg,#6b84c8 0%, #b2a2d3 50%, #4b3b65 80%, #1b1630 100%);}
+    75%  {background:linear-gradient(180deg,#3c4c7a 0%, #7b6a9e 45%, #302745 80%, #120f1f 100%);}
+    100% {background:linear-gradient(180deg,#cbe7ff,#f9f5e7 45%,#d7c3a2 70%,#7b5b87);}
+  }
+  .sun, .moon{
+    position:absolute; width:54px; height:54px; border-radius:50%;
+    left: calc(50% - 27px); top: 12vh; filter:blur(.3px);
+    animation:arc 22s linear infinite;
+  }
+  .sun{ background:var(--sun); box-shadow:0 0 50px 18px rgba(255,216,154,.35);}
+  .moon{ background:var(--moon); box-shadow:0 0 26px 10px rgba(219,225,255,.35); mix-blend:screen; }
+  @keyframes arc{
+    0%   { transform:translate(-34vw,16vh); opacity:1; }
+    40%  { transform:translate(0,-4vh); opacity:1; }
+    60%  { transform:translate(34vw,10vh); opacity:.1; }
+    61%  { opacity:0; } 80%{ opacity:0; }
+    100% { transform:translate(-34vw,16vh); opacity:1; }
+  }
+  .stars{position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease;}
+  .stars .s{position:absolute; width:2px; height:2px; background:#fff; border-radius:50%;
+    box-shadow:0 0 6px 2px rgba(255,255,255,.35);}
+  .stars.on{opacity:.9;}
+
+  .meadow{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(900px 440px at 50% 85%, rgba(0,0,0,.35), transparent 60%),
+      radial-gradient(1200px 480px at 50% 102%, rgba(82,68,52,.45), transparent 62%),
+      linear-gradient(180deg, rgba(153,199,145,.35), rgba(97,148,94,.55) 50%, rgba(47,78,47,.75) 100%);
+    filter:saturate(90%);
+  }
+
+  /* Breeze leaves */
+  .breeze{position:absolute; inset:0; pointer-events:none;}
+  .leaf{position:absolute; width:18px; height:8px; border-radius:20px;
+    background:linear-gradient(90deg,var(--leaf),var(--leaf-dark)); opacity:.85;
+    animation:float var(--s,9s) linear infinite; transform:rotate( var(--r,0deg) ); filter:blur(.2px);}
+  @keyframes float{
+    0%{ transform:translate(var(--x,0),110vh) rotate(0deg); opacity:0;}
+    5%{ opacity:.95;}
+    100%{ transform:translate(calc(var(--x,0) + 6vw), -12vh) rotate(360deg); opacity:0;}
+  }
+
+  /* Circle + plots */
+  .circle{position:absolute; left:50%; top:60%; transform:translate(-50%,-50%);
+    width:min(80vw,820px); aspect-ratio:1; border-radius:50%;
+    background:
+      radial-gradient(closest-side, rgba(255,255,255,.18), rgba(255,255,255,.06)),
+      radial-gradient(70% 70% at 50% 55%, rgba(255,255,255,.10), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 20px 60px rgba(0,0,0,.35), inset 0 0 120px rgba(178,124,255,.12);
+    display:grid; place-items:center;}
+  .plots{position:absolute; inset:7%;}
+  .plot{position:absolute; width:min(18vw,180px); aspect-ratio:1; border-radius:18px;
+    display:grid; place-items:center; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08); box-shadow:0 10px 32px rgba(0,0,0,.35); }
+  .plot:hover{outline:2px solid rgba(178,124,255,.35);}
+  .p-center{ left:50%; top:50%; transform:translate(-50%,-50%); }
+  .p-left{ left:18%; top:58%;}
+  .p-right{ right:18%; top:42%;}
+
+  /* Pot + growth layers */
+  .pot-svg{width:76%; height:auto; filter: drop-shadow(0 10px 22px rgba(0,0,0,.35)); transform: translateY(6px);}
+  .grow{position:absolute; inset:0; display:grid; place-items:center;
+    transition: opacity 600ms ease, transform 600ms ease; will-change: opacity, transform;}
+  .grow svg{ width:72%; height:auto; filter: drop-shadow(0 8px 18px rgba(178,124,255,.25)); }
+
+  .stage-0{opacity:1; transform: translateY(10px) scale(.95);}  /* pot only */
+  .stage-1{opacity:0; transform: translateY(8px)  scale(.98);}  /* sprout */
+  .stage-2{opacity:0; transform: translateY(4px)  scale(1.0);}  /* stem/leaves */
+  .stage-3{opacity:0; transform: translateY(0px)  scale(1.03);}  /* bloom */
+
+  .on-1 .stage-1{opacity:1;}
+  .on-2 .stage-1, .on-2 .stage-2{opacity:1;}
+  .on-3 .stage-1, .on-3 .stage-2, .on-3 .stage-3{opacity:1;}
+
+  .pulse{position:absolute; width:90%; aspect-ratio:1; border-radius:50%;
+    box-shadow:0 0 0 0 rgba(178,124,255,.35); pointer-events:none; animation:pulse 2.2s ease-out infinite;}
+  @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(178,124,255,.35);} 100%{ box-shadow:0 0 0 28px rgba(178,124,255,0);} }
+
+  /* UI */
+  .walk-copy{font-weight:700;}
+  .hint{position:absolute; top:18px; left:50%; transform:translateX(-50%); color:#2b2143; font-weight:700; text-shadow:0 2px 10px rgba(255,255,255,.55);}
+  .ui{position:absolute; bottom:24px; left:50%; transform:translateX(-50%); display:flex; gap:10px;}
+  .btn{background:var(--lav-soft); color:#2b193e; border:0; border-radius:999px; padding:.7rem 1rem; font-weight:800; cursor:pointer;
+    box-shadow:0 10px 28px rgba(178,124,255,.35);}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: ENTRANCE -->
+<section class="screen entrance active" id="s-entrance" aria-label="Entrance">
+  <div class="doors" id="doors">
+    <div class="sunshaft" aria-hidden="true"></div>
+    <div class="door left" aria-hidden="true"></div>
+    <div class="door right" aria-hidden="true"></div>
+  </div>
+  <h1 class="crest">Entering your Garden of Connection…</h1>
+  <button class="enter-btn" id="enter">Step Into Your Garden</button>
+</section>
+
+<!-- SCREEN 2: WALKWAY -->
+<section class="screen walkway" id="s-walk" aria-label="Walkway">
+  <div class="parallax" id="parallax">
+    <div class="layer bg" aria-hidden="true"></div>
+    <div class="layer mid" aria-hidden="true"></div>
+    <div class="layer fg" aria-hidden="true"></div>
+  </div>
+  <div class="walk-copy">Every moment you connect nurtures your garden</div>
+</section>
+
+<!-- SCREEN 3: HUB -->
+<section class="screen" id="s-hub" aria-label="Garden Hub">
+  <div class="hub">
+    <div class="sky" id="sky" aria-hidden="true"></div>
+    <div class="sun"></div>
+    <div class="moon"></div>
+    <div class="stars" id="stars"></div>
+
+    <div class="meadow" aria-hidden="true"></div>
+    <div class="breeze" id="breeze" aria-hidden="true"></div>
+
+    <div class="circle">
+      <div class="hint">Tap a plot to view your progress</div>
+      <div class="plots">
+
+        <!-- CENTER: Tulips of Connection -->
+        <div class="plot p-center" id="plot-tulip" role="button" aria-label="Tulips of Connection">
+          <!-- Pot (inline SVG, luxe ceramic) -->
+          <svg class="pot-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="gpot" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#EFE9FF"/><stop offset="1" stop-color="#D8CFF9"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="100" cy="30" rx="70" ry="18" fill="url(#gpot)" stroke="#d3c8ff" stroke-width="2"/>
+            <path d="M30,30 q70,26 140,0 v40 q-70,28 -140,0 z" fill="url(#gpot)" stroke="#cfc6ff" stroke-width="2"/>
+            <ellipse cx="100" cy="70" rx="70" ry="18" fill="rgba(0,0,0,.08)"/>
+          </svg>
+
+          <div class="grow stage-1"><!-- sprout -->
+            <svg viewBox="0 0 120 140"><path d="M60 110c0-22 8-34 8-48-7 14-14 9-14 0 0-7 6-13 10-15 4 2 10 8 10 15 0 9-7 14-14 0 0 14 6 26 6 48z" fill="#6fb86f"/></svg>
+          </div>
+          <div class="grow stage-2"><!-- leaves/stem -->
+            <svg viewBox="0 0 120 140">
+              <path d="M56 112c-10-8-22-18-30-22 10 2 18 5 30 10" stroke="#4e8858" stroke-width="3" fill="none"/>
+              <path d="M64 112c10-8 22-18 30-22-10 2-18 5-30 10" stroke="#4e8858" stroke-width="3" fill="none"/>
+              <rect x="58" y="84" width="4" height="28" fill="#4e8858" rx="2"/>
+            </svg>
+          </div>
+          <div class="grow stage-3"><!-- bloom -->
+            <svg viewBox="0 0 120 140">
+              <rect x="58" y="82" width="4" height="32" fill="#4e8858" rx="2"/>
+              <circle cx="60" cy="60" r="12" fill="#ffa7d6"/>
+              <circle cx="48" cy="56" r="8" fill="#ffc7e6"/>
+              <circle cx="72" cy="56" r="8" fill="#ffc7e6"/>
+            </svg>
+          </div>
+          <div class="pulse" hidden></div>
+        </div>
+
+        <!-- LEFT: Seed of Trust -->
+        <div class="plot p-left" id="plot-seed" role="button" aria-label="Seed of Trust">
+          <svg class="pot-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs><linearGradient id="gpot2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3E3"/><stop offset="1" stop-color="#EDE6FF"/></linearGradient></defs>
+            <ellipse cx="100" cy="30" rx="70" ry="18" fill="url(#gpot2)" stroke="#e8ddff" stroke-width="2"/>
+            <path d="M30,30 q70,26 140,0 v40 q-70,28 -140,0 z" fill="url(#gpot2)" stroke="#e4d8ff" stroke-width="2"/>
+            <ellipse cx="100" cy="70" rx="70" ry="18" fill="rgba(0,0,0,.08)"/>
+          </svg>
+
+          <div class="grow stage-1"><svg viewBox="0 0 120 140"><circle cx="60" cy="105" r="8" fill="#8b6b3a"/></svg></div>
+          <div class="grow stage-2"><svg viewBox="0 0 120 140"><path d="M60 105c0-18 9-28 9-40-7 12-14 8-14 0 0-6 6-12 10-14 4 1 10 8 10 14 0 9-6 14-12 0 0 12 5 22 5 40z" fill="#6fb86f"/></svg></div>
+          <div class="grow stage-3"><svg viewBox="0 0 120 140"><path d="M60 100c0-14 7-22 7-32-6 10-12 6-12 0 0-5 5-10 8-11 3 1 8 6 8 11 0 7-5 10-10 0 0 10 4 18 4 32z" fill="#6fb86f"/></svg></div>
+          <div class="pulse" hidden></div>
+        </div>
+
+        <!-- RIGHT: Full Bloom -->
+        <div class="plot p-right" id="plot-bloom" role="button" aria-label="Full Bloom">
+          <svg class="pot-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs><linearGradient id="gpot3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EDE6FF"/><stop offset="1" stop-color="#D8CFF9"/></linearGradient></defs>
+            <ellipse cx="100" cy="30" rx="70" ry="18" fill="url(#gpot3)" stroke="#d3c8ff" stroke-width="2"/>
+            <path d="M30,30 q70,26 140,0 v40 q-70,28 -140,0 z" fill="url(#gpot3)" stroke="#cfc6ff" stroke-width="2"/>
+            <ellipse cx="100" cy="70" rx="70" ry="18" fill="rgba(0,0,0,.08)"/>
+          </svg>
+
+          <div class="grow stage-1"><svg viewBox="0 0 120 140"><rect x="58" y="96" width="4" height="18" fill="#4e8858" rx="2"/></svg></div>
+          <div class="grow stage-2"><svg viewBox="0 0 120 140"><rect x="58" y="86" width="4" height="28" fill="#4e8858" rx="2"/><path d="M56 102c-10-8-20-10-28-12 8 1 16 2 28 8" stroke="#4e8858" stroke-width="3" fill="none"/><path d="M64 102c10-8 20-10 28-12-8 1-16 2-28 8" stroke="#4e8858" stroke-width="3" fill="none"/></svg></div>
+          <div class="grow stage-3"><svg viewBox="0 0 120 140"><rect x="58" y="82" width="4" height="32" fill="#4e8858" rx="2"/><circle cx="60" cy="60" r="12" fill="#ffa7d6"/><circle cx="48" cy="56" r="8" fill="#ffc7e6"/><circle cx="72" cy="56" r="8" fill="#ffc7e6"/></svg></div>
+          <div class="pulse" hidden></div>
+        </div>
+
+      </div>
+
+      <div class="ui">
+        <button class="btn" id="plant">Plant New Seed</button>
+        <button class="btn" id="back">Return</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* Flow */
+  const sEntrance = document.getElementById('s-entrance');
+  const sWalk = document.getElementById('s-walk');
+  const sHub = document.getElementById('s-hub');
+  const doors = document.getElementById('doors');
+  const enterBtn = document.getElementById('enter');
+
+  function show(el){ [sEntrance,sWalk,sHub].forEach(x=>x.classList.remove('active')); el.classList.add('active'); }
+
+  enterBtn.addEventListener('click', ()=>{
+    doors.classList.add('open');
+    setTimeout(()=>{ show(sWalk); document.getElementById('parallax').classList.add('walk'); }, 1200);
+    setTimeout(()=>{ show(sHub); startHub(); }, 1200 + 3800);
+  });
+
+  document.getElementById('back').addEventListener('click', ()=>{ show(sEntrance); doors.classList.remove('open'); });
+
+  /* Hub: breeze, stars, growth engine */
+  function startHub(){
+    // Breeze
+    const breeze = document.getElementById('breeze');
+    breeze.innerHTML = '';
+    for(let i=0;i<28;i++){
+      const leaf = document.createElement('div');
+      leaf.className = 'leaf';
+      leaf.style.left = (Math.random()*100)+'%';
+      leaf.style.setProperty('--x', (Math.random()*40-20)+'vw');
+      leaf.style.setProperty('--s', (8+Math.random()*8)+'s');
+      leaf.style.setProperty('--r', (Math.random()*40-20)+'deg');
+      leaf.style.animationDelay = (Math.random()*6)+'s';
+      breeze.appendChild(leaf);
+    }
+
+    // Stars
+    const stars = document.getElementById('stars');
+    stars.innerHTML='';
+    for(let i=0;i<160;i++){
+      const s = document.createElement('div');
+      s.className='s';
+      s.style.left = Math.random()*100+'%';
+      s.style.top  = Math.random()*70+'%';
+      s.style.opacity = 0.6 + Math.random()*0.4;
+      stars.appendChild(s);
+    }
+    function scheduleStars(){
+      stars.classList.remove('on');
+      setTimeout(()=>stars.classList.add('on'), 22*0.55*1000);
+      setTimeout(()=>stars.classList.remove('on'), 22*0.80*1000);
+    }
+    scheduleStars();
+    setInterval(scheduleStars, 22000);
+
+    // Growth system
+    startGrowthSystem();
+  }
+
+  /* ---------- GROWTH ENGINE ---------- */
+  // levels: 0 pot only (implicit), 1 sprout, 2 leaves/stem, 3 bloom
+  const growth = { 'plot-tulip': 1, 'plot-seed': 0, 'plot-bloom': 2 };
+
+  function renderGrowth() {
+    Object.entries(growth).forEach(([id, lvl]) => {
+      const el = document.getElementById(id);
+      el.classList.remove('on-1','on-2','on-3');
+      if (lvl >= 1) el.classList.add('on-1');
+      if (lvl >= 2) el.classList.add('on-2');
+      if (lvl >= 3) el.classList.add('on-3');
+
+      const pulse = el.querySelector('.pulse');
+      pulse.hidden = true;
+      pulse.offsetHeight; // reflow
+      pulse.hidden = false;
+      setTimeout(()=>pulse.hidden = true, 1400);
+    });
+  }
+
+  function advance(plotId) {
+    growth[plotId] = Math.min(3, (growth[plotId] ?? 0) + 1);
+    renderGrowth();
+  }
+
+  function startGrowthSystem(){
+    renderGrowth();
+    // DEMO: auto-progress so you can see it grow now. Remove later.
+    const order = ['plot-seed','plot-tulip','plot-bloom'];
+    let i = 0;
+    setInterval(()=>{ advance(order[i % order.length]); i++; }, 4000);
+  }
+
+  // Keyboard accessibility: Enter key
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && sEntrance.classList.contains('active')) enterBtn.click(); });
+</script>
+</body>
 </html>
+
